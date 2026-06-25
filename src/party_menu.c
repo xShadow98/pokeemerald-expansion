@@ -44,6 +44,7 @@
 #include "menu_specialized.h"
 #include "metatile_behavior.h"
 #include "move_relearner.h"
+#include "naming_screen.h"
 #include "overworld.h"
 #include "palette.h"
 #include "party_menu.h"
@@ -3148,10 +3149,12 @@ static void CursorCb_Nickname(u8 taskId)
 static void CB2_StartNamingScreenFromPartyMenu(void)
 {
     u8 slot = gSpecialVar_0x8004;
-    u16 species = GetMonData(&gPlayerParty[slot], MON_DATA_SPECIES);
-    u8 gender = GetMonGender(&gPlayerParty[slot]);
-    u32 personality = GetMonData(&gPlayerParty[slot], MON_DATA_PERSONALITY);
-    u8* nicknameBuffer = gPlayerParty[slot].nickname;
+    struct Pokemon *mon = &gParties[B_TRAINER_PLAYER][slot];
+    
+    u16 species = GetMonData(mon, MON_DATA_SPECIES);
+    u8 gender = GetMonGender(mon);
+    u32 personality = GetMonData(mon, MON_DATA_PERSONALITY);
+    u8 *nicknameBuffer = mon->box.nickname; // The corrected path
 
     // Launch the naming screen, returning to the party menu when done
     DoNamingScreen(NAMING_SCREEN_CAUGHT_MON, nicknameBuffer, species, gender, personality, CB2_ReturnToPartyMenuFromSummaryScreen);
