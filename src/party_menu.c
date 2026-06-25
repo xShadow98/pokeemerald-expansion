@@ -3153,6 +3153,10 @@ static void CB2_ReturnToPartyMenuFromNamingScreen(void)
     // Safely apply the new nickname from the buffer and recalculate the checksum!
     SetMonData(mon, MON_DATA_NICKNAME, gStringVar2);
 
+    // Force the hardware state back to zero so the menu knows to run its drawing sequence!
+    gMain.state = 0;
+    gPaletteFade.bufferTransferDisabled = TRUE;
+
     // Reload the party menu cleanly
     InitPartyMenu(gPartyMenu.menuType, KEEP_PARTY_LAYOUT, gPartyMenu.action, TRUE, PARTY_MSG_DO_WHAT_WITH_MON, Task_TryCreateSelectionWindow, gPartyMenu.exitCallback);
 }
