@@ -110,6 +110,7 @@ enum {
     MENU_CATALOG_MOWER,
     MENU_CHANGE_FORM,
     MENU_CHANGE_ABILITY,
+    MENU_NICKNAME,
     MENU_FIELD_MOVES
 };
 
@@ -455,6 +456,8 @@ static void ShiftMoveSlot(struct BoxPokemon *, u8, u8);
 static void BlitBitmapToPartyWindow_LeftColumn(u8, u8, u8, u8, u8, bool8);
 static void BlitBitmapToPartyWindow_RightColumn(u8, u8, u8, u8, u8, bool8);
 static void CursorCb_Summary(u8);
+static void CursorCb_Nickname(u8);
+static void CB2_StartNamingScreenFromPartyMenu(void);
 static void CursorCb_Switch(u8);
 static void CursorCb_Cancel1(u8);
 static void CursorCb_Item(u8);
@@ -2956,6 +2959,7 @@ static void SetPartyMonFieldSelectionActions(struct Pokemon *mons, u8 slotId)
 
     sPartyMenuInternal->numActions = 0;
     AppendToList(sPartyMenuInternal->actions, &sPartyMenuInternal->numActions, MENU_SUMMARY);
+    AppendToList(sPartyMenuInternal->actions, &sPartyMenuInternal->numActions, MENU_NICKNAME);
 
     // Add field moves to action list
     for (i = 0; i < MAX_MON_MOVES; i++)
@@ -3128,6 +3132,29 @@ static void CursorCb_Summary(u8 taskId)
     PlaySE(SE_SELECT);
     sPartyMenuInternal->exitCallback = CB2_ShowPokemonSummaryScreen;
     Task_ClosePartyMenu(taskId);
+}
+
+static void CursorCb_Nickname(u8 taskId)
+{
+    PlaySE(SE_SELECT);
+    // Store the selected slot ID so the game knows which Pokemon to rename
+    gSpecialVar_0x8004 = gPartyMenu.slotId; 
+    
+    // Set the transition function and close the menu
+    sPartyMenuInternal->exitCallback = CB2_StartNamingScreenFromPartyMenu;
+    Task_ClosePartyMenu(taskId);
+}
+
+static void CB2_StartNamingScreenFromPartyMenu(void)
+{
+    u8 slot = gSpecialVar_0x8004;
+    u16 species = GetMonData(&gPlayerParty[slot], MON_DATA_SPECIES);
+    u8 gender = GetMonGender(&gPlayerParty[slot]);
+    u32 personality = GetMonData(&gPlayerParty[slot], MON_DATA_PERSONALITY);
+    u8* nicknameBuffer = gPlayerParty[slot].nickname;
+
+    // Launch the naming screen, returning to the party menu when done
+    DoNamingScreen(NAMING_SCREEN_CAUGHT_MON, nicknameBuffer, species, gender, personality, CB2_ReturnToPartyMenuFromSummaryScreen);
 }
 
 static void CB2_ShowPokemonSummaryScreen(void)
