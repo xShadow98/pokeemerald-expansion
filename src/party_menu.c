@@ -3136,45 +3136,42 @@ static void CursorCb_Summary(u8 taskId)
     Task_ClosePartyMenu(taskId);
 }
 
+// Create a dedicated, safe memory buffer for the naming screen
+static u8 sNicknameBuffer[POKEMON_NAME_LENGTH + 1];
+
 static void CursorCb_Nickname(u8 taskId)
 {
     PlaySE(SE_SELECT);
-    gSpecialVar_0x8004 = gPartyMenu.slotId; 
-    
+    // Tell the party menu to go to the naming screen when it finishes fading out
     sPartyMenuInternal->exitCallback = CB2_StartNamingScreenFromPartyMenu;
     Task_ClosePartyMenu(taskId);
 }
 
 static void CB2_ReturnToPartyMenuFromNamingScreen(void)
 {
-    u8 slot = gSpecialVar_0x8004;
-    struct Pokemon *mon = &gParties[B_TRAINER_PLAYER][slot];
+    // Safely apply the new nickname from our custom buffer back to the exact slot
+    SetMonData(&gParties[B_TRAINER_PLAYER][gPartyMenu.slotId], MON_DATA_NICKNAME, sNicknameBuffer);
 
-    // Safely apply the new nickname from the buffer and recalculate the checksum!
-    SetMonData(mon, MON_DATA_NICKNAME, gStringVar2);
-
-    // Force the hardware state back to zero so the menu knows to run its drawing sequence!
-    gMain.state = 0;
+    // Prevent palette glitches during the transition
     gPaletteFade.bufferTransferDisabled = TRUE;
 
-    // Reload the party menu cleanly
-    InitPartyMenu(gPartyMenu.menuType, KEEP_PARTY_LAYOUT, gPartyMenu.action, TRUE, PARTY_MSG_DO_WHAT_WITH_MON, Task_TryCreateSelectionWindow, gPartyMenu.exitCallback);
+    // Reload the party menu cleanly, returning to the main selection state instead of the sub-menu
+    InitPartyMenu(gPartyMenu.menuType, KEEP_PARTY_LAYOUT, gPartyMenu.action, TRUE, PARTY_MSG_CHOOSE_MON, Task_HandleChooseMonInput, gPartyMenu.exitCallback);
 }
 
 static void CB2_StartNamingScreenFromPartyMenu(void)
 {
-    u8 slot = gSpecialVar_0x8004;
-    struct Pokemon *mon = &gParties[B_TRAINER_PLAYER][slot];
+    struct Pokemon *mon = &gParties[B_TRAINER_PLAYER][gPartyMenu.slotId];
     
     u16 species = GetMonData(mon, MON_DATA_SPECIES);
     u8 gender = GetMonGender(mon);
     u32 personality = GetMonData(mon, MON_DATA_PERSONALITY);
     
-    // Pull the current nickname into a safe temporary buffer
-    GetMonNickname(mon, gStringVar2);
+    // Pull the current nickname into our safe, isolated buffer
+    GetMonNickname(mon, sNicknameBuffer);
 
-    // Launch the naming screen using the temporary buffer, then run our custom return function
-    DoNamingScreen(NAMING_SCREEN_CAUGHT_MON, gStringVar2, species, gender, personality, CB2_ReturnToPartyMenuFromNamingScreen);
+    // Launch the naming screen using the custom buffer
+    DoNamingScreen(NAMING_SCREEN_CAUGHT_MON, sNicknameBuffer, species, gender, personality, CB2_ReturnToPartyMenuFromNamingScreen);
 }
 
 static void CB2_ShowPokemonSummaryScreen(void)
