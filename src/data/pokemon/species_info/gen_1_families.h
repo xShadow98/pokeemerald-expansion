@@ -20410,6 +20410,7 @@ const struct SpeciesInfo gSpeciesInfoGen1[] =
         FOOTPRINT(Dragonite)
         SHADOW(4, 20, SHADOW_SIZE_M)
         .isMegaEvolution = TRUE,
+        .isPrimalReversion = TRUE,
         .levelUpLearnset = sDragoniteLevelUpLearnset,
         .teachableLearnset = sDragoniteTeachableLearnset,
         .formSpeciesIdTable = sDragoniteFormSpeciesIdTable,
