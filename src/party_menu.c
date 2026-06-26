@@ -3142,21 +3142,18 @@ static u8 sNicknameBuffer[POKEMON_NAME_LENGTH + 1];
 static void CursorCb_Nickname(u8 taskId)
 {
     PlaySE(SE_SELECT);
-    // Tell the party menu to go to the naming screen when it finishes fading out
     sPartyMenuInternal->exitCallback = CB2_StartNamingScreenFromPartyMenu;
     Task_ClosePartyMenu(taskId);
 }
 
 static void CB2_ReturnToPartyMenuFromNamingScreen(void)
 {
-    // Safely apply the new nickname from our custom buffer back to the exact slot
-    SetMonData(&gParties[B_TRAINER_PLAYER][gPartyMenu.slotId], MON_DATA_NICKNAME, sNicknameBuffer);
+    // Safely apply the new nickname from the global text buffer
+    SetMonData(&gParties[B_TRAINER_PLAYER][gPartyMenu.slotId], MON_DATA_NICKNAME, gStringVar2);
 
-    // Prevent palette glitches during the transition
-    gPaletteFade.bufferTransferDisabled = TRUE;
-
-    // Reload the party menu cleanly, returning to the main selection state instead of the sub-menu
-    InitPartyMenu(gPartyMenu.menuType, KEEP_PARTY_LAYOUT, gPartyMenu.action, TRUE, PARTY_MSG_CHOOSE_MON, Task_HandleChooseMonInput, gPartyMenu.exitCallback);
+    // Hijack the built-in summary screen return function to handle the complex state reloading!
+    gLastViewedMonIndex = gPartyMenu.slotId;
+    CB2_ReturnToPartyMenuFromSummaryScreen();
 }
 
 static void CB2_StartNamingScreenFromPartyMenu(void)
@@ -3167,11 +3164,11 @@ static void CB2_StartNamingScreenFromPartyMenu(void)
     u8 gender = GetMonGender(mon);
     u32 personality = GetMonData(mon, MON_DATA_PERSONALITY);
     
-    // Pull the current nickname into our safe, isolated buffer
-    GetMonNickname(mon, sNicknameBuffer);
+    // Pull the current nickname into the game's safe global buffer
+    GetMonNickname(mon, gStringVar2);
 
-    // Launch the naming screen using the custom buffer
-    DoNamingScreen(NAMING_SCREEN_CAUGHT_MON, sNicknameBuffer, species, gender, personality, CB2_ReturnToPartyMenuFromNamingScreen);
+    // Launch the naming screen using the global buffer, then route to our custom return
+    DoNamingScreen(NAMING_SCREEN_CAUGHT_MON, gStringVar2, species, gender, personality, CB2_ReturnToPartyMenuFromNamingScreen);
 }
 
 static void CB2_ShowPokemonSummaryScreen(void)
