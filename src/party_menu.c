@@ -3137,7 +3137,7 @@ static void CursorCb_Summary(u8 taskId)
 }
 
 // Create a dedicated, safe memory buffer for the naming screen
-static u8 sNicknameBuffer[POKEMON_NAME_LENGTH + 1];
+// static u8 sNicknameBuffer[POKEMON_NAME_LENGTH + 1];
 
 static void CursorCb_Nickname(u8 taskId)
 {
