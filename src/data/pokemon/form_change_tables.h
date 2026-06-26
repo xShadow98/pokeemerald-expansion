@@ -329,8 +329,13 @@ static const struct FormChange sSnorlaxFormChangeTable[] =
 static const struct FormChange sDragoniteFormChangeTable[] =
 {
 #if P_GEN_9_MEGA_EVOLUTIONS
+    // Trigger 1: Manual Mega Evolution using the Dragoninite
     {FORM_CHANGE_BATTLE_MEGA_EVOLUTION_ITEM,    SPECIES_DRAGONITE_MEGA, ITEM_DRAGONINITE},
+    
+    // Trigger 2: Automatic Primal Reversion using the Assault Vest
+    {FORM_CHANGE_BATTLE_PRIMAL_REVERSION,       SPECIES_DRAGONITE_MEGA, ITEM_ASSAULT_VEST},
 #endif
+    // Reversion triggers to return it to normal when the battle ends or it faints
     {FORM_CHANGE_FAINT,                         SPECIES_DRAGONITE},
     {FORM_CHANGE_END_BATTLE,                    SPECIES_DRAGONITE},
     {FORM_CHANGE_TERMINATOR},
